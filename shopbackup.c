@@ -84,26 +84,26 @@ void printProduct(struct Product p)
     //printf("------------\n");
 }
 
-void printCustomer(struct Customer c, struct Shop s)//
+void printCustomer(struct Customer c)//, struct Shop s
 {
     printf("------------\n");
     printf("Customer Name: %s\nCustomer Budget: %.2f\n", c.name, c.budget);
-    // printf("You have ordered\n");
+
     double sum = 0;
 
     for(int i = 0; i < c.index; i++)
     {
- 		int shopQuant = s.stock[i].quantity;
-		int custQuant = c.shoppingList[i].quantity;  
+ 		//int shopQuant = s.stock[i].quantity;
+		// int custQuant = c.shoppingList[i].quantity;  
 
 
         printProduct(c.shoppingList[i].product);
 
-        // printf("QUANTITY: %d\n\n", c.shoppingList[i].quantity);
-        
-        printf("You have ordered %d of the above\n",c.shoppingList[i].quantity);
-        double cost = c.shoppingList[i].quantity * c.shoppingList[i].product.price;
-        printf("The cost will be $%.2f\n", cost);
+        printf("QUANTITY: %d\n\n", c.shoppingList[i].quantity);
+
+        // printf("%s Orders %d of above product\n", c.name, c.shoppingList[i].quantity);
+        // double cost = c.shoppingList[i].quantity * c.shoppingList[i].product.price;
+        // printf("The cost to %s will be $%.2f\n", c.name, cost);
     }
 }
 
@@ -154,16 +154,18 @@ struct Shop createAndStockShop()
 
 }
 
-struct Customer custOrder(char* url)//char* filename, 
+struct Customer custOrder()
 {
     FILE * fp;
     char * line = NULL;
     size_t len = 0;
     size_t read;
 
-    // printf(url);
+	// char * customerFile;
+	// char str1[50] = "../";
+	// customerFile = strcat(str1, filename);
 
-	fp = fopen(url, "r");
+	fp = fopen("order1.csv", "r");
     if (fp == NULL)
         exit(EXIT_FAILURE);
 
@@ -194,10 +196,10 @@ struct Customer custOrder(char* url)//char* filename,
 
 void liveShop()
 {
-    struct Shop shop = createAndStockShop();
+
 		char* url = (char*) malloc(10 * sizeof(char));
 		char* custName = (char*) malloc(10 * sizeof(char));
-		printf("\nAccount Name: ");
+		printf("\nPlease Enter Your First Name: ");
         scanf("%s", &custName);
 
         sprintf(url, "../Customer/%s/liveOrder.csv",&custName);
@@ -221,30 +223,34 @@ void liveShop()
 			char * prodQuantity = (char*) malloc(10 * sizeof(char));
 
 			while (continueShopping == 1) {
-				printf("\nWhat would you like to order?: ");
+				printf("\nPlease Enter Product Name: ");
 				scanf("%s", &prodName);
 
-				printf("\nHow many would you like?: #");
+				printf("\nPlease Enter Requried Quantity: #");
 				scanf("%s", &prodQuantity);
 				
 				fprintf(fpw, "%s, %s\n", &prodName, &prodQuantity);
 
-				printf("\n1 to continue shopping or 0 to checkout: ");
+				printf("\nEnter 1 to continue shopping or 0 to stop: ");
 				scanf("%d", &continueShopping);                
 
 				// If exiting the shop. Process the order &
 				// update the shop stock and balance
 				if (continueShopping == 0) {
 
+                    //fpw2 = fopen("../%s/liveOrder.csv", "w"), custName;
+
+
+                    //char* filename = "/%s/liveOrder.csv", custName;
                     fclose(fpw);
+                    //fclose(fpw2);
+
                                                          
-					// char * filename = "liveOrder.csv";					
-					struct Customer customerLiveOrder = custOrder(url);
+					
+					//struct Customer customerLiveOrder = customerOrderList(filename);
 					printf("\nProcessing Customer Order\n");
 					printf("\n------------------------------");
-					// processingOrder(customerLiveOrder, shop);
-                    struct Customer customerOrder = custOrder(url);
-                    printCustomer(customerOrder, shop);
+					//processingOrder(&customerLiveOrder, &shop);
 				}
 			}
 		}
@@ -252,41 +258,33 @@ void liveShop()
 
 void displayMenu()
 {
-    struct Shop shop = createAndStockShop();
+	//askName();
+
 	int choice = -1;	
 
 	while (choice != 0){		
 		
 		fflush(stdin);
 		printf("\nPlease choose an option (0 to Exit) ");
-		printf("\nSelect (1): to load your existing order: ");
-		printf("\nSelect (2): to order from the store: ");
+		printf("\nSelect (1): to load your existing order ");
+		printf("\nSelect (2): to order from the store ");
 		scanf("%d", &choice);
 
 		if (choice == 1)
 		{
-
-        char* url = (char*) malloc(10 * sizeof(char));
-		char* custName = (char*) malloc(10 * sizeof(char));
-		printf("\nAccount Name: ");
-        scanf("%s", &custName);
-
-        sprintf(url, "../Customer/%s/order.csv",&custName);
-
-			// printf("The user pressed 1, load in csv\n");
-            // char * filename = "order1.csv";
-            struct Customer customerOrder = custOrder(url);
-            printCustomer(customerOrder, shop);
+			printf("The user pressed 1, load in csv\n");
+            struct Customer customerOrder = custOrder();
+            printCustomer(customerOrder);
 
 		} else if (choice == 2){
 			printf("What would you like to buy \n");
-            	
+            	struct Shop shop = createAndStockShop();
 
 	            printShop(shop);
-                liveShop(shop);
+                liveShop();
 		}	
 		//  else if (choice == 3){
-
+		// 	askName();
 		// }
 	}
 	printf("Thank you for shopping with C");
@@ -296,8 +294,60 @@ void displayMenu()
 int main(void)
 {
     displayMenu();
+    // struct Customer shane = {"Shane", 100.0};
+
+    // struct Product coke = {"Can Coke",1.10};
+    // struct Product bread = {"Bread", 0.7};
+
+
+    // printProduct(coke);
+
+    // struct ProductStock cokeStock = { coke, 20};
+    // struct ProductStock breadStock = { bread, 2};
+    // shane.shoppingList[shane.index++] = cokeStock;
+    // shane.shoppingList[shane.index++] = breadStock;
+
+    // printCustomer(shane);
+
+	// struct Shop shop = createAndStockShop();
+	// printShop(shop);
+
+
+    // printf("The shop has %d of the product %s\n", cokeStock.quantity, cokeStock.product.name);
 
     return 0;
 
 }
 
+
+// struct Customer custOrder()
+// {
+// 	FILE * fp;
+//     char * line = NULL;
+//     size_t len = 0;
+//     ssize_t read;
+
+//     fp = fopen("order1.csv", "r");
+//     if (fp == NULL)
+//         exit(EXIT_FAILURE);
+	
+// 	read = getline(&line, &len, fp);
+//     char *a = strtok(line, ",");
+//     char *b = strtok(NULL, ",");
+//     char *custName = malloc(sizeof(char) * 50);
+//     double custBudget = atof(b);
+//     strcpy(custName, a); 
+// 	struct Customer customer = { custName, custBudget};
+	
+//     while ((read = getline(&line, &len, fp)) != -1) {
+// 		// TODO process remaining lines
+// 	}        
+// 	return customer;
+// }   
+
+// int main(void) 
+// {
+//     struct Customer customer = custOrder();
+// 	printf("Customer name is: %s and they have: %.2f for their budget\n", customer.name, customer.budget);
+//     return 0;
+// }
