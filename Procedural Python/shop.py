@@ -1,7 +1,15 @@
+#A Procedural Python program for a basic shop that reads in stock and orders from csv
+#Multi Paradigm Programming.
+#GMIT Data Analytics 2021
+#Author: Shane Austin
+
 from dataclasses import dataclass, field
 from typing import List
 import csv
 
+
+###########################################################################
+#establishing the data classes
 @dataclass
 class Product:
     name: str
@@ -23,12 +31,16 @@ class Customer:
     budget: float = 0.0
     shoppingList: List[ProductStock] = field(default_factory=list)
 
-
-
+#########################################################################
+#Prints the name and price of a product
 def printProduct(p):
 
     print("\nPRODUCT NAME: {} \nPRODUCT PRICE: €{}".format(p.name, p.price))
 
+
+#Takes in a customer shopping list and prints:
+#Customer Name and Budget
+#What they have ordered
 def printCustomer(c,s):
 
     print("------------------------------")
@@ -39,34 +51,43 @@ def printCustomer(c,s):
     totalBill = 0
 
     for item in c.shoppingList:        
-
+        #Check if item is in stock and inform if not
         if checkOrder(s, item.product.name) == None:
             print("********************")
             print("WE DO NOT SELL {}".format(item.product.name))
             print("------------------------------")
         else:
-
+            #if in stock process the order
             orderedProduct = checkOrder(s, item.product.name).product
             printProduct(orderedProduct)
+            #Print the name and quantity of ordered item
             print("\nYou have ordered {} {}".format(int(item.quantity),item.product.name))        
 
             cost = item.quantity * orderedProduct.price
-            # print("The cost to {} will be €{:.2f}".format(c.name, cost))
-
+            print("The cost to {} will be €{:.2f}".format(c.name, cost))
+            print("------------------------------")
+            
             totalBill += cost
 
+            #Print the price of ordered items
             print("Total Cost will be €{:.2f}".format(totalBill))
             print("------------------------------")
 
+#Takes in Shop stock and prints what's available
 def printShop(s):
 
     print('Shop has {:.2f} in cash'.format(s.cash))
 
+    #loop through stock
     for item in s.stock:
+
+        #print stock item and quantity available
+		#calls on printProduct()
         printProduct(item.product)
         print("The Shop has {} of the above".format(int(item.quantity)))
         print("------------------------------")
 
+#function to check stock against order item
 def checkOrder(s, name):
         for i in s.stock:
         # for each ProductStock compare product.name with searched string 
@@ -76,14 +97,19 @@ def checkOrder(s, name):
         # if not found return None
         return None
 
-
+#reads in the stock.csv
 def createAndStockShop():
     s = Shop()
+
+    #open the csv and exit if file does not exist
     with open ('../stock.csv', 'r') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter = ',')
 
+        #read csv first line "cash"
         first_row=next(csv_reader)
         s.cash=(float(first_row[0]))
+
+        #add the stock looping through the csv
         for row in csv_reader:
             p = Product(row[0], float(row[1]))
             ps = ProductStock(p, float(row[2]))
@@ -91,14 +117,17 @@ def createAndStockShop():
 
     return s
 
+#Read in customer specific file path
 def custOrder(path):
 
     with open (path, 'r') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter = ',')
 
+        #Read in the customer "name" and "budget" from the .csv file
         first_row=next(csv_reader)
         order = Customer(first_row[0], float(first_row[1]))
 
+        #Read in the "product name" and "quantity" ordered
         for row in csv_reader:
             n = row[0]
             q = float(row[1])
@@ -108,7 +137,8 @@ def custOrder(path):
 
     return order
 
-
+#Process the customer order
+#Update the shop stock and shop cash
 def checkOut(c, s):
 
     print("\n------------------------------")
@@ -167,13 +197,14 @@ def checkOut(c, s):
         print("\nYour total bill is €{:.2f} budget is €{:.2f}\n".format(totalBill, startBudget))
         print("You will have €{:.2f} left in your budget\n\n".format(startBudget - totalBill))
     
+    #update values
     s.cash = cash
     c.budget = budget
 
 
     return
 
-
+#Live Shop to create a temp csv for that order from Account name path
 def liveShop(path,custName):
     print("\nLive Shop")
     print("*************")
@@ -181,6 +212,7 @@ def liveShop(path,custName):
     with open (path, 'w', newline="") as csv_file:
         csv_writer = csv.writer(csv_file, delimiter = ',')
 
+        #Enter the budget customer has for this transaction
         custBudget = int(input("\nPlease Enter Your Budget: €"))
         c = (custName, custBudget)
 
@@ -188,6 +220,7 @@ def liveShop(path,custName):
     
         continueShopping = 0
 
+        #Keep adding items to the shop until exit command
         while continueShopping != 'n':
 
             prodName = input("What would you like to order?:")
@@ -200,6 +233,7 @@ def liveShop(path,custName):
 
             continueShopping = input("y to continue shopping or n to checkout: ")
 
+            #Break the loop and close the csv
             if continueShopping == 'n':
                 break                
 
@@ -208,37 +242,46 @@ def liveShop(path,custName):
         print("Going to Check Out")
         print("------------------------------")
 
+#Function to update the stock csv with new figures
 def updateShop(s):
 
     with open ('../stock.csv', 'w', newline="") as csv_file:
         csv_writer = csv.writer(csv_file, delimiter = ',')
 
-
+        #assign rounded cash value to a list and write to the csv
         cash = []
         cashRounded = round(s.cash, 2)
         cash.append(cashRounded)
         csv_writer.writerow(cash)
 
+        #loop through the stock to update the csv
         for item in s.stock:
             newStock = (item.product.name, item.product.price, int(item.quantity))
             csv_writer.writerow(newStock)
 
+#Function to update the customer budget
 def updateCustomer(c, path):
 
     with open (path, 'w', newline="") as csv_file:
         csv_writer = csv.writer(csv_file, delimiter = ',')
 
 
-
+        #Write the first line of the csv with new budget
         custUpdate = (c.name, round(c.budget,2))
         csv_writer.writerow(custUpdate)
 
+        #rewrite the original customer order
         for item in c.shoppingList:
             newStock = (item.product.name, int(item.quantity))
             csv_writer.writerow(newStock)
 
+#Options menu for the application
+#Can run order from csv
+#order from live shop
+#Print the current stock
 def main():
 
+    #list of current viable users
     accounts = ("Anna", "Dominic", "Mary", "Shane")
 
     while True:
@@ -250,8 +293,10 @@ def main():
         
         choice = input("Choice:")
   
+        #option 1 Shop form csv
         if choice=="1": 
 
+            #Letting user know the account conditions
             print("\nWe have 4 accounts currently:")
             print("Anna:    (Who likes to order what we have)")
             print("Dominic: (Who orders items we don't stock)")
@@ -260,10 +305,15 @@ def main():
 
             custName = input("\nAccount Name:")
 
+            #continue if account name is in the list
             if custName in accounts:
             
                 print("------------------------------")
+                #set customer file path
                 path = "../Customer/{}/order.csv".format(custName)
+
+                #process the order, checkout
+                #and update the CSVs
                 order = custOrder(path)
                 printCustomer(order, s)
                 checkOut(order, s)
@@ -274,7 +324,8 @@ def main():
             else:
                 print("UNKNOWN ACCOUNT!")
                 main()    
-           
+
+        #option 2 live order
         elif choice=="2":
 
             print("\nWe have 4 accounts currently:")
@@ -286,8 +337,14 @@ def main():
 
                 path = "../Customer/{}/liveOrder.csv".format(custName)
                 print("What would you like to buy\n")
+
+                #print current stock
                 printShop(s) 
+                #runn live shop functio
                 liveShop(path,custName)
+
+                #process the order, checkout
+                #and update the shop CSV
                 order= custOrder(path)
                 printCustomer(order, s)           
                 checkOut(order, s)
@@ -296,6 +353,7 @@ def main():
             print("UNKNOWN ACCOUNT!")                
             main()
 
+        #Option 3 show stock
         elif choice=="3":
             printShop(s)
 

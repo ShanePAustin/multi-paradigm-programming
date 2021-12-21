@@ -1,7 +1,12 @@
-import sys
+#A Object Orientated Python program for a basic shop that reads in stock and orders from csv
+#Multi Paradigm Programming.
+#GMIT Data Analytics 2021
+#Author: Shane Austin
+
 import csv
 
-# create a Product class, give it a repr method
+#Create a Product class
+#product name and price
 class Product:
 
     def __init__(self, name, price=0):
@@ -10,55 +15,48 @@ class Product:
     
     def __repr__(self):
         return f'PRODUCT NAME: {self.name}\nPRODUCT PRICE: {self.price}'
-# create a ProductStock 
+
+#Create a ProductStock class
+#Link to product and set quantity
 class ProductStock:
 
     def __init__(self, product, quantity):
-        self.product = product # product is a class
-        self.quantity = quantity # quantity is a float - a primitive. Methods cannot be invoked on primitives
-    # getter method for getting product name
+        self.product = product 
+        self.quantity = quantity
+
+    #Function to get product name
     def name(self):
         return self.product.name
-    # getter method for getting product price
-    def unit_price(self):
+
+    #Function to get product price
+    def unitPrice(self):
         return self.product.price
 
-    # method for calculate cost   
+    #Function to get calculate cost   
     def cost(self):
-        return self.unit_price() * self.quantity
+        return self.unitPrice() * self.quantity
 
-    # a getter method to get the quantity of a stock item
-    def get_quantity(self):
-        return self.quantity
-
-    # a setter method to update the quantity of a product for each quantity of stock sold
-    def set_quantity(self, saleQty):
-        self.quantity -= saleQty
-
-    # a getter method to access the product
-    def get_product(self):
-        return self
-
-    # a repr method to print the product, uses the product repr method
+    #repr function to print the product
     def __repr__(self):
 
-        # self.product is an instance of the product a class 
         return "{}\nThe shop has {} of the above \n-------------".format(self.product,int(self.quantity))
  
 ## Define a customer class
 class Customer:
-    # define the constructor 
+ 
     def __init__(self, path):
         self.shoppingList=[]
              
-
+        #Read in customer specific file path
         with open(path) as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
 
+            #Read in the customer "name" and "budget" from the .csv file
             first_row = next(csv_reader)
             self.name = first_row[0]
             self.budget = float(first_row[1])
 
+            #Read in the "product name" and "quantity" ordered
             for row in csv_reader:
                 n = row[0]
                 q = float(row[1])
@@ -69,52 +67,58 @@ class Customer:
             return
 
             
-     # a method to calculate customer costs   
-    def calculate_costs(self, price_list):
-            # each shop_item is a productStock
-        for shop_item in price_list:
+    #Function to calculate customer costs   
+    def calculate_costs(self, priceList):
+            # each shopItem is a productStock
+        for shopItem in priceList:
             # iterate through the customer shopping list 
-            for list_item in self.shoppingList:
+            for listItem in self.shoppingList:
                 # check if the item name matches a shop item
-                if (list_item.name() == shop_item.name()):
+                if (listItem.name() == shopItem.name()):
                     # if so pull out the price
-                    list_item.product.price = shop_item.unit_price()
-    # a method for calculating item cost
+                    listItem.product.price = shopItem.unitPrice()
+
+    #Function for calculating item cost
     def order_cost(self):
         cost = 0
-        # going through the customer shopping list of productStocks  and getting out the cost
-        for list_item in self.shoppingList:
-            # get the cost using the ProductStock cost method
-            cost += list_item.cost()
+        #Loop through the customer shopping list
+        for listItem in self.shoppingList:
+            #Get the cost
+            cost += listItem.cost()
         return cost
 
+    #Function to update the customer budget
     def updateCustomer(self, path):
 
         with open (path, 'w', newline="") as csv_file:
             csv_writer = csv.writer(csv_file, delimiter = ',')
 
-
-
+            #Write the first line of the csv with new budget
             custUpdate = (self.name, round(self.budget,2))
             csv_writer.writerow(custUpdate)
 
+            #rewrite the original customer order
             for item in self.shoppingList:
                 newStock = (item.product.name, int(item.quantity))
                 csv_writer.writerow(newStock)
 
-# A repr method returns a state based representation of the class 
+    #Takes in a customer shopping list and prints:
+    #Customer Name and Budget
+    #What they have ordered             
     def __repr__(self):
+
 
         print("------------------------------")
         print("Customer Name: {} \nCustomer Budget {}".format(self.name,self.budget))
         print("------------------------------")
 
-        # just print the actual customer order from the file first
+ 
         for item in self.shoppingList:
             print(item.product)
             print("You have ordered {} {}\n".format(int(item.quantity),item.product.name))
             
             cost = item.quantity * item.product.price
+
             print("The cost to {} will be €{}".format(self.name, cost))
             print("------------------------------")  
 
@@ -125,7 +129,7 @@ class Customer:
                 
         return out
 
-# create a subclass of customer so the live customer can use all the customer functionality
+#LiveShop class to create a temp csv for that order from Account name path
 class liveShop:
     def __init__(c, path, custName):
         print("Live Shop")
@@ -134,6 +138,7 @@ class liveShop:
         with open (path, 'w', newline="") as csv_file:
             csv_writer = csv.writer(csv_file, delimiter = ',')
 
+            #Enter the budget customer has for this transaction
             custBudget = int(input("\nPlease Enter Your Budget: €"))
             c = (custName, custBudget)
 
@@ -141,6 +146,7 @@ class liveShop:
         
             continueShopping = 0
 
+            #Keep adding items to the shop until exit command
             while continueShopping != 'n':
 
                 prodName = input("What would you like to order?:")
@@ -153,6 +159,7 @@ class liveShop:
 
                 continueShopping = input("y to continue shopping or n to checkout: ")
 
+                #Break the loop and close the csv
                 if continueShopping == 'n':
                     break                
 
@@ -161,26 +168,27 @@ class liveShop:
             print("Going to Check Out")
             print("------------------------------")
 
-############## ################## Shop class  ####################  ######################  
-#  the shop takes a customers basket, checks stock, calculcates cost, updates stock, updates cash
-       
+
+#Shop class for stock and order processing       
 class Shop:
-    # 
+     
     def __init__(self, path):
-        # set up an array to read in the stock to
+        #Set up an array to read in the stock to
         self.stock = []
         with open(path) as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
 
+            #read csv first line "cash"
             first_row = next(csv_reader)
             self.cash = float(first_row[0])
 
+            #add the stock looping through the csv
             for row in csv_reader:
                 p = Product(row[0], float(row[1]))
                 ps = ProductStock(p, float(row[2]))
                 self.stock.append(ps)
 
-    # a representation method for the shop
+    # repr for the shop
     def __repr__(self):
         str = ""
         str += f'Shop has €{self.cash} in cash\n'
@@ -189,22 +197,19 @@ class Shop:
             str += f"{item}\n"
         return str        
 
-      ### def checkOut, takes in a customer 
+    #Process the customer order
     def checkOut(self,c):
 
         print("\n------------------------------")
         print("Check Out")
-
-        print("------------------------------")
+        print("*************")
+        
         print("Order Summary\n------------------------------")
 
         cash = float(self.cash)
         budget = float(c.budget)
         startBudget = budget
         totalBill = 0
-
-        # print(cash)
-        # print(budget)
 
         for item in c.shoppingList:
 
@@ -243,19 +248,18 @@ class Shop:
                     totalBill += (stockCheck.quantity * stockCheck.product.price)
                     stockCheck.quantity = 0
 
-        # totalBill = (startBudget - budget)
+ 
 
         if totalBill < budget:
             print("\nYour total bill is €{:.2f} budget is €{:.2f}\n".format(totalBill, startBudget))
-            # print("\nYour total bill is €{:.2f}\n".format(totalBill))
             print("You will have €{:.2f} left in your budget\n\n".format(startBudget - totalBill))  
 
         self.cash = cash
         c.budget = budget
 
-
         return      
 
+    #function to check stock against order item
     def checkOrder(s, name):
             for i in s.stock:
             # for each ProductStock compare product.name with searched string 
@@ -264,25 +268,32 @@ class Shop:
                     return i
             # if not found return None
             return None
- 
+
+    #Function to update the stock csv with new figures
     def updateShop(s):
 
         with open ('../stock.csv', 'w', newline="") as csv_file:
             csv_writer = csv.writer(csv_file, delimiter = ',')
 
-
+            #assign rounded cash value to a list and write to the csv
             cash = []
             cashRounded = round(s.cash, 2)
             cash.append(cashRounded)
             csv_writer.writerow(cash)
 
+            #loop through the stock to update the csv
             for item in s.stock:
                 newStock = (item.product.name, item.product.price, int(item.quantity))
                 csv_writer.writerow(newStock)
             
 
+    #Options menu for the application
+    #Can run order from csv
+    #order from live shop
+    #Print the current stock
     def menu(self):
 
+        #list of current viable users
         accounts = ("Anna", "Dominic", "Mary", "Shane")
         while True:
 
@@ -293,6 +304,7 @@ class Shop:
 
             self.choice = input("Choice:")
 
+            #option 1 Shop form csv
             if (self.choice =="1"):    
 
                 print("\nWe have 4 accounts currently:")
@@ -304,6 +316,7 @@ class Shop:
                 custName = input("\nAccount Name:")
                 print("------------------------------")
 
+                #continue if account name is in the list
                 if custName in accounts:
                     path = "../Customer/{}/order.csv".format(custName)
 
@@ -311,9 +324,11 @@ class Shop:
 
                     # call calculate method on the customer with shop stock as input
                     c.calculate_costs(self.stock)
-                    # print the customer
+                    #print the customer
                     print(c)
-                    # process the order using customer object as input
+
+                    #process the order, checkout
+                    #and update the CSVs
                     self.checkOut(c)
                     self.updateShop()
                     c.updateCustomer(path)
@@ -322,6 +337,7 @@ class Shop:
                 print("UNKNOWN ACCOUNT!")
                 self.menu()
 
+            #option 2 live order
             elif (self.choice=="2"):
 
                 print("\nWe have 4 accounts currently:")
@@ -335,30 +351,35 @@ class Shop:
                     print("What would you like to buy\n")
                     print(self)   
 
-                    # create a customer object by calling the live class
+                    
                     liveShop(path,custName)
                     c = Customer(path)
-                    # call calculate method on the live customer object with shop stock as input
+                    
                     c.calculate_costs(self.stock)
                     print(c)
-                    # process the order with the customer object as input
+                    
+                    #process the order, checkout
+                    #and update the shop CSV                    
                     self.checkOut(c)
                     self.updateShop()
                     self.menu()
 
-                elif (self.choice =="3"):
-                    print("------------------------------")
-                    
-                    print(self)
-                    self.menu()        
-
                 print("UNKNOWN ACCOUNT!")
                 self.menu()
 
+
+            #Option 3 show stock
+            elif (self.choice =="3"):
+                print("------------------------------")
+                    
+                print(self)
+                self.menu()      
+
+
             elif(self.choice =="0"):
                 print("\nThank you for shopping with OOP")
-                # to exit straight out of the program as this is part of the shop class
-                sys.exit()
+                
+                exit()
             
             else:
                 print("Please choose an option from the menu")

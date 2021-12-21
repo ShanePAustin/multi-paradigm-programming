@@ -189,8 +189,6 @@ struct Customer custOrder(char* path)
 		size_t len = 0;
 		size_t read;
 
-		// printf(path);
-
 		fp = fopen(path, "r");
 		if (fp == NULL)
 			exit(EXIT_FAILURE);
@@ -321,7 +319,7 @@ struct Shop checkOut(struct Customer* c, struct Shop* s) {
 }
 
 
-//
+//Live Shop to create a temp csv for that order
 void liveShop(struct Shop s)
 {
     struct Shop shop = createAndStockShop();
@@ -334,6 +332,7 @@ void liveShop(struct Shop s)
 		printf("\nAccount Name: ");
         scanf("%s", &custName);
 
+		//set account name to the customers folder and order file
         sprintf(path, "../Customer/%s/liveOrder.csv",&custName);
 
         FILE *fpw;
@@ -345,6 +344,7 @@ void liveShop(struct Shop s)
 
 		char* custBudget = (char*) malloc(10 * sizeof(char));
 
+		//Enter the budget customer has for this transaction
 		printf("\nPlease Enter Your Budget: e");
 		scanf("%s", &custBudget);
 
@@ -355,6 +355,7 @@ void liveShop(struct Shop s)
 		char * prodName = (char*) malloc(10 * sizeof(char));
 		char * prodQuantity = (char*) malloc(10 * sizeof(char));
 
+			//Keep adding items to the shop until exit command
 			while (continueShopping == 1) {
 
 				printf("\nWhat would you like to order?: ");
@@ -383,9 +384,10 @@ void liveShop(struct Shop s)
 			}
 		}
 
-void updateShop(struct Shop s)//, struct Customer c
+//Function to update the stock csv with new figures
+void updateShop(struct Shop s)
 {
-	// Open the stock.csv in writing mode.
+	// Open the stock.csv in write mode.
 	FILE * fp;
 	char *filename = "../stock.csv"; 
 	fp = fopen(filename,"w+");
@@ -398,7 +400,7 @@ void updateShop(struct Shop s)//, struct Customer c
 	// Update cash.
 	fprintf(fp,"%.2f\n", s.cash);
 
-	// Update stock.
+	// Loop to update stock.
 	for (int i=0; i< s.index-1; i++)
 	{
 		fprintf(fp, "%s,%.2f,%i\n",s.stock[i].product.name,s.stock[i].product.price,s.stock[i].quantity);	
@@ -407,6 +409,10 @@ void updateShop(struct Shop s)//, struct Customer c
 	return;
 }
 
+//Options menu for the application
+//Can run order from csv
+//order from live shop
+//Print the current stock
 void displayMenu()
 {
     struct Shop shop = createAndStockShop();
@@ -435,8 +441,10 @@ void displayMenu()
 			printf("\nAccount Name: ");
 			scanf("%s", &custName);
 
+			//Assign the path for the correct customer
 			sprintf(path, "../Customer/%s/order.csv",&custName);
 
+			//Print the order, checkout and update the csv
 			struct Customer customerOrder = custOrder(path);
 			printCustomer(&customerOrder);
 			checkOut(&customerOrder, &shop);
@@ -448,6 +456,7 @@ void displayMenu()
 
 			printf("What would you like to buy \n");            	
 
+			//Print the current shop, do live shop and update csv
 	        printShop(shop);
             liveShop(shop);
 			updateShop(shop);
